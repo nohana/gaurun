@@ -11,9 +11,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/RobotsAndPencils/buford/payload"
-	"github.com/RobotsAndPencils/buford/payload/badge"
-	"github.com/RobotsAndPencils/buford/push"
+	"github.com/nohana/buford/payload"
+	"github.com/nohana/buford/payload/badge"
+	"github.com/nohana/buford/push"
 
 	"golang.org/x/net/http2"
 )
@@ -121,8 +121,15 @@ func NewApnsPayloadHttp2(req *RequestGaurunNotification) map[string]interface{} 
 }
 
 func NewApnsHeadersHttp2(req *RequestGaurunNotification) *push.Headers {
+	var pushType push.PushType
+	if req.PushType == "" {
+		pushType = push.PushTypeAlert
+	} else {
+		pushType = push.PushType(req.PushType)
+	}
 	headers := &push.Headers{
-		Topic: ConfGaurun.Ios.Topic,
+		Topic:    ConfGaurun.Ios.Topic,
+		PushType: pushType,
 	}
 
 	if req.Expiry > 0 {

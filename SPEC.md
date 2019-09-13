@@ -68,6 +68,7 @@ The request-body must have the `notifications` array. Table below shows the para
 |time_to_live     |int         |expiration of message kept on FCM storage|-       |0      |only Android                              |
 |extend           |string array|extensible partition                     |-       |       |                                          |
 |identifier       |string      |notification identifier                  |-       |       |an optional value to identify notification|
+|push_type        |string      |apns-push-type(iOS only)                 |-       |alert  |only iOS(13.0+)                           |
 
 The JSON below is the response-body example from Gaurun. In this case, the status is 200(OK).
 
