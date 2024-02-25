@@ -2,13 +2,17 @@ package gaurun
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
+	"strconv"
 	"sync/atomic"
 	"time"
+
+	"firebase.google.com/go/messaging"
 
 	"github.com/mercari/gaurun/buford/push"
 	"github.com/mercari/gaurun/gcm"
@@ -31,7 +35,9 @@ type RequestGaurunNotification struct {
 	DelayWhileIdle bool   `json:"delay_while_idle,omitempty"`
 	TimeToLive     int    `json:"time_to_live,omitempty"`
 	Priority       string `json:"priority,omitempty"`
-	// iOS
+	// Android FCM v1
+	Body string `json:"body,omitempty"`
+	// iOS and Android FCM v1
 	Title            string       `json:"title,omitempty"`
 	Subtitle         string       `json:"subtitle,omitempty"`
 	PushType         string       `json:"push_type,omitempty"`
@@ -161,6 +167,61 @@ func pushNotificationAndroid(req RequestGaurunNotification) error {
 	return nil
 }
 
+func pushNotificationFCMV1(req RequestGaurunNotification) error {
+	LogError.Debug("START push notification for FCMv1")
+
+	data := make(map[string]string)
+	if len(req.Extend) > 0 {
+		for _, extend := range req.Extend {
+			data[extend.Key] = extend.Value
+		}
+	}
+
+	client, err := FirebaseApp.Messaging(context.Background())
+	if err != nil {
+		return err
+	}
+
+	token := req.Tokens[0]
+
+	bodyMessage := ""
+	if len(req.Body) > 0 {
+		bodyMessage = req.Body
+	}
+
+	msg := &messaging.Message{
+		Notification: &messaging.Notification{
+			Title: req.Title,
+			Body:  bodyMessage,
+		},
+		Data:  data,
+		Token: token,
+	}
+	msg.Android.CollapseKey = req.CollapseKey
+	durationStr := strconv.Itoa(req.TimeToLive)
+	ttl, err := time.ParseDuration(durationStr + "s")
+	if err != nil {
+		msg.Android.TTL = &ttl
+	}
+
+	stime := time.Now()
+	_, err = client.Send(context.Background(), msg)
+	etime := time.Now()
+	ptime := etime.Sub(stime).Seconds()
+	if err != nil {
+		atomic.AddInt64(&StatGaurun.Android.PushError, 1)
+		LogPush(req.ID, StatusFailedPush, token, ptime, req, err)
+		return err
+	}
+
+	LogPush(req.ID, StatusSucceededPush, token, ptime, req, nil)
+
+	atomic.AddInt64(&StatGaurun.Android.PushSuccess, int64(len(req.Tokens)))
+	LogError.Debug("END push notification for FCMv1")
+
+	return nil
+}
+
 func validateNotification(notification *RequestGaurunNotification) error {
 
 	for _, token := range notification.Tokens {
@@ -201,7 +262,8 @@ func sendResponse(w http.ResponseWriter, msg string, code int) {
 
 	w.WriteHeader(code)
 
-	w.Write(buf.Bytes())
+	// ひとまず無視しておく
+	_, _ = w.Write(buf.Bytes())
 }
 
 func PushNotificationHandler(w http.ResponseWriter, r *http.Request) {
@@ -226,7 +288,7 @@ func PushNotificationHandler(w http.ResponseWriter, r *http.Request) {
 	)
 
 	if ConfGaurun.Log.Level == "debug" {
-		reqBody, ierr := ioutil.ReadAll(r.Body)
+		reqBody, ierr := io.ReadAll(r.Body)
 		if ierr != nil {
 			sendResponse(w, "failed to read request-body", http.StatusInternalServerError)
 			return

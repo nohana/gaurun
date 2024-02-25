@@ -1,9 +1,9 @@
 package gaurun
 
 import (
-	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"runtime"
 	"strconv"
 	"sync/atomic"
@@ -36,6 +36,9 @@ type SectionAndroid struct {
 	KeepAliveTimeout int    `toml:"keepalive_timeout"`
 	KeepAliveConns   int    `toml:"keepalive_conns"`
 	RetryMax         int    `toml:"retry_max"`
+	UseV1            bool   `toml:"use_v1"`
+	Project          string `toml:"project"`
+	CredentialsFile  string `toml:"credentials_file"`
 }
 
 type SectionIos struct {
@@ -101,7 +104,7 @@ func BuildDefaultConf() ConfToml {
 }
 
 func LoadConf(confGaurun ConfToml, confPath string) (ConfToml, error) {
-	doc, err := ioutil.ReadFile(confPath)
+	doc, err := os.ReadFile(confPath)
 	if err != nil {
 		return confGaurun, err
 	}

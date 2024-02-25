@@ -15,10 +15,12 @@ timeout = 5 # sec
 keepalive_timeout = 30
 keepalive_conns = 4
 retry_max = 1
+credentials_file = "v1cred.json"
 
 [ios]
-pem_cert_path = "cert.pem"
-pem_key_path = "key.pem"
+token_auth_key_path = "./keys/key.p8"
+token_auth_key_id = "auth key"
+token_auth_team_id = "auth team id"
 sandbox = true
 enabled = true
 timeout = 5
@@ -29,4 +31,4 @@ retry_max = 1
 [log]
 access_log = "stdout"
 error_log = "stderr"
-level = "error"
+level = "info"

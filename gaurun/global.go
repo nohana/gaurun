@@ -3,6 +3,8 @@ package gaurun
 import (
 	"github.com/mercari/gaurun/gcm"
 
+	firebase "firebase.google.com/go"
+
 	"go.uber.org/zap"
 )
 
@@ -14,8 +16,9 @@ var (
 	// Stat for Gaurun
 	StatGaurun StatApp
 	// http client for APNs and GCM/FCM
-	APNSClient APNsClient
-	GCMClient  *gcm.Client
+	APNSClient  APNsClient
+	GCMClient   *gcm.Client
+	FirebaseApp *firebase.App
 	// access and error logger
 	LogAccess *zap.Logger
 	LogError  *zap.Logger

@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/signal"
@@ -82,12 +81,12 @@ func main() {
 		}
 
 		if gaurun.ConfGaurun.Ios.IsCertificateBasedProvider() {
-			_, err = ioutil.ReadFile(gaurun.ConfGaurun.Ios.PemCertPath)
+			_, err = os.ReadFile(gaurun.ConfGaurun.Ios.PemCertPath)
 			if err != nil {
 				gaurun.LogSetupFatal(fmt.Errorf("the certification file for iOS was not found"))
 			}
 
-			_, err = ioutil.ReadFile(gaurun.ConfGaurun.Ios.PemKeyPath)
+			_, err = os.ReadFile(gaurun.ConfGaurun.Ios.PemKeyPath)
 			if err != nil {
 				gaurun.LogSetupFatal(fmt.Errorf("the key file for iOS was not found"))
 			}
@@ -124,7 +123,7 @@ func main() {
 	if len(conf.Core.Pid) > 0 {
 		if _, err := os.Stat(filepath.Dir(conf.Core.Pid)); os.IsNotExist(err) {
 			gaurun.LogSetupFatal(fmt.Errorf("directory for pid file is not exist: %v", err))
-		} else if err := ioutil.WriteFile(conf.Core.Pid, []byte(strconv.Itoa(os.Getpid())), DefaultPidPermission); err != nil {
+		} else if err := os.WriteFile(conf.Core.Pid, []byte(strconv.Itoa(os.Getpid())), DefaultPidPermission); err != nil {
 			gaurun.LogSetupFatal(fmt.Errorf("failed to create a pid file: %v", err))
 		}
 	}
@@ -132,6 +131,11 @@ func main() {
 	if gaurun.ConfGaurun.Android.Enabled {
 		if err := gaurun.InitGCMClient(); err != nil {
 			gaurun.LogSetupFatal(fmt.Errorf("failed to init gcm/fcm client: %v", err))
+		}
+		if gaurun.ConfGaurun.Android.UseV1 {
+			if err := gaurun.InitFirebaseAppForFcmV1(); err != nil {
+				gaurun.LogSetupFatal(fmt.Errorf("failed to init fcm v1 firebase messaging client: %v", err))
+			}
 		}
 	}
 

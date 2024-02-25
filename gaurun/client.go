@@ -1,11 +1,16 @@
 package gaurun
 
 import (
+	"context"
 	"crypto/ecdsa"
 	"fmt"
 	"net"
 	"net/http"
 	"time"
+
+	firebase "firebase.google.com/go"
+
+	"google.golang.org/api/option"
 
 	"github.com/mercari/gaurun/buford/token"
 	"github.com/mercari/gaurun/gcm"
@@ -47,6 +52,38 @@ func InitGCMClient() error {
 	GCMClient.Http = &http.Client{
 		Transport: transport,
 		Timeout:   time.Duration(ConfGaurun.Android.Timeout) * time.Second,
+	}
+
+	return nil
+}
+
+func InitFirebaseAppForFcmV1() error {
+	transport := &http.Transport{
+		MaxIdleConnsPerHost: ConfGaurun.Android.KeepAliveConns,
+		Dial: (&net.Dialer{
+			Timeout:   time.Duration(ConfGaurun.Android.Timeout) * time.Second,
+			KeepAlive: time.Duration(keepAliveInterval(ConfGaurun.Android.KeepAliveTimeout)) * time.Second,
+		}).Dial,
+		IdleConnTimeout: time.Duration(ConfGaurun.Android.KeepAliveTimeout) * time.Second,
+	}
+
+	client := &http.Client{
+		Transport: transport,
+		Timeout:   time.Duration(ConfGaurun.Android.Timeout) * time.Second,
+	}
+
+	opts := make([]option.ClientOption, 2)
+	opts[0] = option.WithCredentialsFile(ConfGaurun.Android.CredentialsFile)
+	opts[1] = option.WithHTTPClient(client)
+
+	// if ConfGaurun.Android.Project is empty string, it is acquired from the contents of ConfGaurun.Android.CredentialsFile
+	config := &firebase.Config{ProjectID: ConfGaurun.Android.Project}
+
+	var err error
+
+	FirebaseApp, err = firebase.NewApp(context.Background(), config, opts...)
+	if err != nil {
+		return err
 	}
 
 	return nil
