@@ -177,8 +177,10 @@ func pushNotificationFCMV1(req RequestGaurunNotification) error {
 		}
 	}
 
-	client, err := FirebaseApp.Messaging(context.Background())
+	sendContext := context.Background()
+	client, err := FirebaseApp.Messaging(sendContext)
 	if err != nil {
+		LogPush(req.ID, StatusFailedPush, "", time.Now().Sub(time.Now()).Seconds(), req, err)
 		return err
 	}
 
@@ -194,9 +196,15 @@ func pushNotificationFCMV1(req RequestGaurunNotification) error {
 			Title: req.Title,
 			Body:  bodyMessage,
 		},
-		Data:    data,
-		Token:   token,
-		Android: &messaging.AndroidConfig{},
+		Token: token,
+		Android: &messaging.AndroidConfig{
+			Notification: &messaging.AndroidNotification{
+				Title: req.Title,
+				Body:  bodyMessage,
+			},
+			Data:     data,
+			Priority: "high",
+		},
 	}
 	if len(req.CollapseKey) > 0 {
 		msg.Android.CollapseKey = req.CollapseKey
@@ -208,7 +216,7 @@ func pushNotificationFCMV1(req RequestGaurunNotification) error {
 	}
 
 	stime := time.Now()
-	_, err = client.Send(context.Background(), msg)
+	_, err = client.Send(sendContext, msg)
 	etime := time.Now()
 	ptime := etime.Sub(stime).Seconds()
 	if err != nil {

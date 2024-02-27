@@ -58,30 +58,28 @@ func InitGCMClient() error {
 }
 
 func InitFirebaseAppForFcmV1() error {
-	transport := &http.Transport{
-		MaxIdleConnsPerHost: ConfGaurun.Android.KeepAliveConns,
-		Dial: (&net.Dialer{
-			Timeout:   time.Duration(ConfGaurun.Android.Timeout) * time.Second,
-			KeepAlive: time.Duration(keepAliveInterval(ConfGaurun.Android.KeepAliveTimeout)) * time.Second,
-		}).Dial,
-		IdleConnTimeout: time.Duration(ConfGaurun.Android.KeepAliveTimeout) * time.Second,
-	}
+	//transportを自作しWithHttpClientするとAPNsのエラーが出るようになるため、v1ライブラリを使う場合はHttpClientの動作を指定しない
+	//transport := &http.Transport{
+	//	MaxIdleConnsPerHost: ConfGaurun.Android.KeepAliveConns,
+	//	DialContext: (&net.Dialer{
+	//		Timeout:   time.Duration(ConfGaurun.Android.Timeout) * time.Second,
+	//		KeepAlive: time.Duration(keepAliveInterval(ConfGaurun.Android.KeepAliveTimeout)) * time.Second,
+	//	}).DialContext,
+	//	IdleConnTimeout: time.Duration(ConfGaurun.Android.KeepAliveTimeout) * time.Second,
+	//}
+	//
+	//client := &http.Client{
+	//	Transport: transport,
+	//	Timeout:   time.Duration(ConfGaurun.Android.Timeout) * time.Second,
+	//}
 
-	client := &http.Client{
-		Transport: transport,
-		Timeout:   time.Duration(ConfGaurun.Android.Timeout) * time.Second,
-	}
-
-	opts := make([]option.ClientOption, 2)
+	opts := make([]option.ClientOption, 1)
 	opts[0] = option.WithCredentialsFile(ConfGaurun.Android.CredentialsFile)
-	opts[1] = option.WithHTTPClient(client)
-
-	// if ConfGaurun.Android.Project is empty string, it is acquired from the contents of ConfGaurun.Android.CredentialsFile
-	config := &firebase.Config{ProjectID: ConfGaurun.Android.Project}
+	//opts[1] = option.WithHTTPClient(client)
 
 	var err error
 
-	FirebaseApp, err = firebase.NewApp(context.Background(), config, opts...)
+	FirebaseApp, err = firebase.NewApp(context.Background(), nil, opts...)
 	if err != nil {
 		return err
 	}
