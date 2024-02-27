@@ -3,4 +3,7 @@ bin/gaurun_client
 bin/gaurun_recover
 bin/darwin
 bin/linux
+bin/conf.toml
+bin/v1cred.json
+bin/gaurun_start.sh
 .idea

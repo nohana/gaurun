@@ -194,10 +194,13 @@ func pushNotificationFCMV1(req RequestGaurunNotification) error {
 			Title: req.Title,
 			Body:  bodyMessage,
 		},
-		Data:  data,
-		Token: token,
+		Data:    data,
+		Token:   token,
+		Android: &messaging.AndroidConfig{},
 	}
-	msg.Android.CollapseKey = req.CollapseKey
+	if len(req.CollapseKey) > 0 {
+		msg.Android.CollapseKey = req.CollapseKey
+	}
 	durationStr := strconv.Itoa(req.TimeToLive)
 	ttl, err := time.ParseDuration(durationStr + "s")
 	if err != nil {
