@@ -192,6 +192,7 @@ func pushNotificationFCMV1(req RequestGaurunNotification) error {
 	}
 
 	msg := &messaging.Message{
+		Data: data,
 		Notification: &messaging.Notification{
 			Title: req.Title,
 			Body:  bodyMessage,
@@ -202,7 +203,6 @@ func pushNotificationFCMV1(req RequestGaurunNotification) error {
 				Title: req.Title,
 				Body:  bodyMessage,
 			},
-			Data:     data,
 			Priority: "high",
 		},
 	}
