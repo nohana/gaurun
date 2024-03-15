@@ -13,9 +13,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/mercari/gaurun/buford/token"
-	"github.com/mercari/gaurun/gaurun"
-	"github.com/mercari/gaurun/gcm"
+	"github.com/nohana/gaurun/buford/token"
+	"github.com/nohana/gaurun/gaurun"
+	"github.com/nohana/gaurun/gcm"
 )
 
 var (
@@ -62,12 +62,12 @@ func pushNotificationIos(req gaurun.RequestGaurunNotification) bool {
 
 	service := gaurun.NewApnsServiceHttp2(APNSClient)
 
-	for _, token := range req.Tokens {
+	for _, deviceToken := range req.Tokens {
 
 		headers := gaurun.NewApnsHeadersHttp2(&req)
 		payload := gaurun.NewApnsPayloadHttp2(&req)
 
-		err := gaurun.ApnsPushHttp2(token, service, headers, payload)
+		err := gaurun.ApnsPushHttp2(deviceToken, service, headers, payload)
 		if err != nil {
 			return false
 		}

@@ -4,23 +4,45 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"net/http"
 	"os"
-	"os/signal"
-	"path/filepath"
-	"strconv"
-	"syscall"
 	"time"
+
+	"cloud.google.com/go/pubsub"
 
 	"github.com/nohana/gaurun/buford/token"
 	"github.com/nohana/gaurun/gaurun"
 )
 
-const (
-	DefaultPidPermission = 0644
-)
-
 func main() {
+	setup()
+}
+
+func PubSubPush(ctx context.Context, m *pubsub.Message) {
+
+	setup()
+
+	// Start a goroutine to log number of job queue.
+	go func() {
+		for {
+			queue := len(gaurun.QueueNotification)
+			if queue == 0 {
+				break
+			}
+
+			gaurun.LogError.Info(fmt.Sprintf("wait until queue is empty. Current queue len: %d", queue))
+			time.Sleep(1 * time.Second)
+		}
+	}()
+
+	gaurun.PushNotification(ctx, m)
+
+	// Block until all pusher worker job is done.
+	gaurun.PusherWg.Wait()
+
+	gaurun.LogError.Info("successfully shutdown")
+}
+
+func setup() {
 	versionPrinted := flag.Bool("v", false, "gaurun version")
 	confPath := flag.String("c", "", "configuration file path for gaurun")
 	listenPort := flag.String("p", "", "port number or unix socket path")
@@ -59,11 +81,11 @@ func main() {
 	}
 
 	// set logger
-	accessLogger, accessLogReopener, err := gaurun.InitLog(gaurun.ConfGaurun.Log.AccessLog, "info")
+	accessLogger, _, err := gaurun.InitLog(gaurun.ConfGaurun.Log.AccessLog, "info")
 	if err != nil {
 		gaurun.LogSetupFatal(err)
 	}
-	errorLogger, errorLogReopener, err := gaurun.InitLog(gaurun.ConfGaurun.Log.ErrorLog, gaurun.ConfGaurun.Log.Level)
+	errorLogger, _, err := gaurun.InitLog(gaurun.ConfGaurun.Log.ErrorLog, gaurun.ConfGaurun.Log.Level)
 	if err != nil {
 		gaurun.LogSetupFatal(err)
 	}
@@ -106,28 +128,6 @@ func main() {
 		}
 	}
 
-	sigHUPChan := make(chan os.Signal, 1)
-	signal.Notify(sigHUPChan, syscall.SIGHUP)
-
-	sighupHandler := func() {
-		if err := accessLogReopener.Reopen(); err != nil {
-			gaurun.LogError.Warn(fmt.Sprintf("failed to reopen access log: %v", err))
-		}
-		if err := errorLogReopener.Reopen(); err != nil {
-			gaurun.LogError.Warn(fmt.Sprintf("failed to reopen error log: %v", err))
-		}
-	}
-
-	go signalHandler(sigHUPChan, sighupHandler)
-
-	if len(conf.Core.Pid) > 0 {
-		if _, err := os.Stat(filepath.Dir(conf.Core.Pid)); os.IsNotExist(err) {
-			gaurun.LogSetupFatal(fmt.Errorf("directory for pid file is not exist: %v", err))
-		} else if err := os.WriteFile(conf.Core.Pid, []byte(strconv.Itoa(os.Getpid())), DefaultPidPermission); err != nil {
-			gaurun.LogSetupFatal(fmt.Errorf("failed to create a pid file: %v", err))
-		}
-	}
-
 	if gaurun.ConfGaurun.Android.Enabled {
 		if err := gaurun.InitGCMClient(); err != nil {
 			gaurun.LogSetupFatal(fmt.Errorf("failed to init gcm/fcm client: %v", err))
@@ -147,60 +147,4 @@ func main() {
 
 	gaurun.InitStat()
 	gaurun.StartPushWorkers(gaurun.ConfGaurun.Core.WorkerNum, gaurun.ConfGaurun.Core.QueueNum)
-
-	mux := http.NewServeMux()
-	gaurun.RegisterHandlers(mux)
-
-	server := &http.Server{
-		Handler: mux,
-	}
-	go func() {
-		gaurun.LogError.Info("start server")
-		if err := gaurun.RunServer(server, &gaurun.ConfGaurun); err != nil {
-			gaurun.LogError.Info(fmt.Sprintf("failed to serve: %s", err))
-		}
-	}()
-
-	// Graceful shutdown (kicked by SIGTERM).
-	//
-	// First, it shutdowns server and stops accepting new requests.
-	// Then wait until all remaining queues in buffer are flushed.
-	sigTERMChan := make(chan os.Signal, 1)
-	signal.Notify(sigTERMChan, syscall.SIGTERM)
-
-	<-sigTERMChan
-	gaurun.LogError.Info("shutdown server")
-	timeout := time.Duration(conf.Core.ShutdownTimeout) * time.Second
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
-	if err := server.Shutdown(ctx); err != nil {
-		gaurun.LogError.Error(fmt.Sprintf("failed to shutdown server: %v", err))
-	}
-
-	// Start a goroutine to log number of job queue.
-	go func() {
-		for {
-			queue := len(gaurun.QueueNotification)
-			if queue == 0 {
-				break
-			}
-
-			gaurun.LogError.Info(fmt.Sprintf("wait until queue is empty. Current queue len: %d", queue))
-			time.Sleep(1 * time.Second)
-		}
-	}()
-
-	// Block until all pusher worker job is done.
-	gaurun.PusherWg.Wait()
-
-	gaurun.LogError.Info("successfully shutdown")
-}
-
-func signalHandler(ch <-chan os.Signal, sighupFn func()) {
-	for sig := range ch {
-		switch sig {
-		case syscall.SIGHUP:
-			sighupFn()
-		}
-	}
 }

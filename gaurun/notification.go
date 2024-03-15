@@ -12,10 +12,12 @@ import (
 	"sync/atomic"
 	"time"
 
+	"cloud.google.com/go/pubsub"
+
 	"firebase.google.com/go/messaging"
 
-	"github.com/mercari/gaurun/buford/push"
-	"github.com/mercari/gaurun/gcm"
+	"github.com/nohana/gaurun/buford/push"
+	"github.com/nohana/gaurun/gcm"
 
 	"go.uber.org/zap"
 )
@@ -335,4 +337,44 @@ func PushNotificationHandler(w http.ResponseWriter, r *http.Request) {
 
 	LogError.Debug("response to client")
 	sendResponse(w, "ok", http.StatusOK)
+}
+
+func PushNotification(ctx context.Context, m *pubsub.Message) {
+	LogError.Debug("push-request is Accepted")
+
+	LogError.Debug("data check")
+	if m.Data != nil {
+		LogError.Debug("subscription data check failed!")
+		return
+	}
+
+	var (
+		reqGaurun RequestGaurun
+		err       error
+	)
+
+	if ConfGaurun.Log.Level == "debug" {
+		if res := LogError.Check(zap.DebugLevel, "parse request body"); res != nil {
+			res.Write(zap.String("body", string(m.Data)))
+		}
+	}
+	err = json.Unmarshal(m.Data, &reqGaurun)
+	if err != nil {
+		LogError.Error("Request-body is malformed" + err.Error())
+		return
+	}
+
+	if len(reqGaurun.Notifications) == 0 {
+		LogError.Error("empty notification")
+		return
+	} else if int64(len(reqGaurun.Notifications)) > ConfGaurun.Core.NotificationMax {
+		msg := fmt.Sprintf("number of notifications(%d) over limit(%d)", len(reqGaurun.Notifications), ConfGaurun.Core.NotificationMax)
+		LogError.Error(msg)
+		return
+	}
+
+	LogError.Debug("enqueue notification")
+	go enqueueNotifications(reqGaurun.Notifications)
+
+	LogError.Debug("finish push processes!")
 }

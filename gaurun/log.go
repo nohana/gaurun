@@ -109,6 +109,16 @@ func LogAcceptedRequest(r *http.Request) {
 	)
 }
 
+//func LogAcceptedMessage(m *pubsub.Message) {
+//	LogAccess.Info("",
+//		zap.String("type", "accepted-request"),
+//		zap.String("uri", r.URL.String()),
+//		zap.String("method", r.Method),
+//		zap.String("proto", r.Proto),
+//		zap.Int64("content_length", r.ContentLength),
+//	)
+//}
+
 func LogPush(id uint64, status, token string, ptime float64, req RequestGaurunNotification, errPush error) {
 	var plat string
 	switch req.Platform {

@@ -2,7 +2,7 @@ package push_test
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mercari/gaurun/buford/push"
+	"github.com/nohana/gaurun/buford/push"
 )
 
 func TestPush(t *testing.T) {
@@ -27,7 +27,7 @@ func TestPush(t *testing.T) {
 			t.Errorf("Expected url %v, got %v", expectURL, r.URL)
 		}
 
-		body, err := ioutil.ReadAll(r.Body)
+		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -58,7 +58,7 @@ func TestBadPriorityPush(t *testing.T) {
 
 	handler.HandleFunc("/3/device/", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(`{"reason": "BadPriority"}`))
+		_, _ = w.Write([]byte(`{"reason": "BadPriority"}`))
 	})
 
 	service := push.NewService(http.DefaultClient, server.URL)
@@ -97,7 +97,7 @@ func TestTimestampError(t *testing.T) {
 
 	handler.HandleFunc("/3/device/", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusGone)
-		w.Write([]byte(`{"reason":"Unregistered","timestamp":12622780800000}`))
+		_, _ = w.Write([]byte(`{"reason":"Unregistered","timestamp":12622780800000}`))
 	})
 
 	service := push.NewService(http.DefaultClient, server.URL)

@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mercari/gaurun/buford/token"
+	"github.com/nohana/gaurun/buford/token"
 )
 
 func TestHeaders(t *testing.T) {

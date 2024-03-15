@@ -5,11 +5,11 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
-	"io/ioutil"
+	"os"
 	"testing"
 	"time"
 
-	"github.com/mercari/gaurun/buford/token"
+	"github.com/nohana/gaurun/buford/token"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -21,15 +21,15 @@ func TestValidTokenFromP8File(t *testing.T) {
 }
 
 func TestValidTokenFromP8Bytes(t *testing.T) {
-	bytes, _ := ioutil.ReadFile("testdata/authkey-valid.p8")
+	bytes, _ := os.ReadFile("testdata/authkey-valid.p8")
 	_, err := token.AuthKeyFromBytes(bytes)
 	assert.NoError(t, err)
 }
 
 func TestNoSuchFileP8File(t *testing.T) {
-	token, err := token.AuthKeyFromFile("")
+	keyToken, err := token.AuthKeyFromFile("")
 	assert.Equal(t, errors.New("open : no such file or directory").Error(), err.Error())
-	assert.Nil(t, token)
+	assert.Nil(t, keyToken)
 }
 
 func TestInvalidP8File(t *testing.T) {
@@ -50,47 +50,47 @@ func TestInvalidECDSAP8File(t *testing.T) {
 // Expiry & Generation
 
 func TestExpired(t *testing.T) {
-	token := &token.Token{}
-	assert.True(t, token.Expired())
+	keyToken := &token.Token{}
+	assert.True(t, keyToken.Expired())
 }
 
 func TestNotExpired(t *testing.T) {
-	token := &token.Token{
+	keyToken := &token.Token{
 		IssuedAt: time.Now().Unix(),
 	}
-	assert.False(t, token.Expired())
+	assert.False(t, keyToken.Expired())
 }
 
 func TestExpiresBeforeAnHour(t *testing.T) {
-	token := &token.Token{
+	keyToken := &token.Token{
 		IssuedAt: time.Now().Add(-50 * time.Minute).Unix(),
 	}
-	assert.True(t, token.Expired())
+	assert.True(t, keyToken.Expired())
 }
 
 func TestGenerateBearerIfExpired(t *testing.T) {
 	authKey, _ := token.AuthKeyFromFile("testdata/authkey-valid.p8")
-	token := &token.Token{
+	keyToken := &token.Token{
 		AuthKey: authKey,
 	}
-	token.GenerateBearerIfExpired()
-	assert.Equal(t, time.Now().Unix(), token.IssuedAt)
+	keyToken.GenerateBearerIfExpired()
+	assert.Equal(t, time.Now().Unix(), keyToken.IssuedAt)
 }
 
 func TestGenerateWithNoAuthKey(t *testing.T) {
-	token := &token.Token{}
-	bool, err := token.Generate()
-	assert.False(t, bool)
+	keyToken := &token.Token{}
+	isSuccess, err := keyToken.Generate()
+	assert.False(t, isSuccess)
 	assert.Error(t, err)
 }
 
 func TestGenerateWithInvalidAuthKey(t *testing.T) {
 	pubkeyCurve := elliptic.P521()
 	privatekey, _ := ecdsa.GenerateKey(pubkeyCurve, rand.Reader)
-	token := &token.Token{
+	keyToken := &token.Token{
 		AuthKey: privatekey,
 	}
-	bool, err := token.Generate()
-	assert.False(t, bool)
+	isSuccess, err := keyToken.Generate()
+	assert.False(t, isSuccess)
 	assert.Error(t, err)
 }

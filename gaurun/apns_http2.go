@@ -7,15 +7,15 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"net/http"
+	"os"
 	"time"
 
-	"github.com/mercari/gaurun/buford/payload"
-	"github.com/mercari/gaurun/buford/payload/badge"
-	"github.com/mercari/gaurun/buford/push"
-	"github.com/mercari/gaurun/buford/token"
+	"github.com/nohana/gaurun/buford/payload"
+	"github.com/nohana/gaurun/buford/payload/badge"
+	"github.com/nohana/gaurun/buford/push"
+	"github.com/nohana/gaurun/buford/token"
 )
 
 type APNsClient struct {
@@ -90,7 +90,7 @@ func NewApnsClientHttp2ForToken(authKey *ecdsa.PrivateKey, keyID, teamID string)
 }
 
 func loadX509KeyPairWithPassword(certPath, keyPath, keyPassphrase string) (tls.Certificate, error) {
-	keyPEMBlock, err := ioutil.ReadFile(keyPath)
+	keyPEMBlock, err := os.ReadFile(keyPath)
 	if err != nil {
 		return tls.Certificate{}, err
 	}
@@ -106,7 +106,7 @@ func loadX509KeyPairWithPassword(certPath, keyPath, keyPassphrase string) (tls.C
 		}
 		keyPEMBlock = pem.EncodeToMemory(&pem.Block{Type: pemBlock.Type, Bytes: keyPEMBlock})
 	}
-	certPEMBlock, err := ioutil.ReadFile(certPath)
+	certPEMBlock, err := os.ReadFile(certPath)
 	if err != nil {
 		return tls.Certificate{}, err
 	}

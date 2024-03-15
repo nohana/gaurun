@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/mercari/gaurun/buford/token"
+	"github.com/nohana/gaurun/buford/token"
 )
 
 // Headers sent with a push to control the notification (optional)

@@ -12,8 +12,8 @@ import (
 
 	"google.golang.org/api/option"
 
-	"github.com/mercari/gaurun/buford/token"
-	"github.com/mercari/gaurun/gcm"
+	"github.com/nohana/gaurun/buford/token"
+	"github.com/nohana/gaurun/gcm"
 )
 
 func keepAliveInterval(keepAliveTimeout int) int {

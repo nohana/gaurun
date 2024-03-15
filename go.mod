@@ -1,8 +1,10 @@
-module github.com/mercari/gaurun
+module github.com/nohana/gaurun
 
 go 1.15
 
 require (
+	cloud.google.com/go/pubsub v1.37.0
+	cloud.google.com/go/storage v1.39.1 // indirect
 	firebase.google.com/go v3.13.0+incompatible
 	github.com/client9/reopen v1.0.0
 	github.com/fukata/golang-stats-api-handler v1.0.0

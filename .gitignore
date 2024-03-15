@@ -1,6 +1,7 @@
 bin/gaurun
 bin/gaurun_client
 bin/gaurun_recover
+bin/gaurun_pubsub
 bin/darwin
 bin/linux
 bin/conf.toml
