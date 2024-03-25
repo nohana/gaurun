@@ -3,6 +3,7 @@ package gaurun
 import (
 	"context"
 	"crypto/ecdsa"
+	"encoding/base64"
 	"fmt"
 	"net"
 	"net/http"
@@ -74,7 +75,7 @@ func InitFirebaseAppForFcmV1() error {
 	//}
 
 	opts := make([]option.ClientOption, 1)
-	opts[0] = option.WithCredentialsFile(ConfGaurun.Android.CredentialsFile)
+	opts[0] = InitSaOption()
 	//opts[1] = option.WithHTTPClient(client)
 
 	var err error
@@ -85,6 +86,24 @@ func InitFirebaseAppForFcmV1() error {
 	}
 
 	return nil
+}
+
+func InitSaOption() option.ClientOption {
+	var saOpt option.ClientOption
+	if len(ConfGaurun.Android.CredentialsJSONBase64) > 0 {
+		// Base64デコード
+		decodedSaJsonBytes, err := base64.StdEncoding.DecodeString(ConfGaurun.Android.CredentialsJSONBase64)
+		if err != nil {
+			fmt.Println("config load sa base64 json decode error", err)
+		} else {
+			// デコードされた結果を文字列に変換
+			saJson := string(decodedSaJsonBytes)
+			saOpt = option.WithCredentialsJSON([]byte(saJson))
+		}
+	} else {
+		saOpt = option.WithCredentialsFile(ConfGaurun.Android.CredentialsFile)
+	}
+	return saOpt
 }
 
 func InitAPNSClient() error {
