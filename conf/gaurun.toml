@@ -17,7 +17,8 @@ keepalive_conns = 4
 retry_max = 1
 use_v1 = false
 project = ""
-credentials_file = "v1cred.json"
+credentials_file = ""
+credentials_json = "YOUR_BASE64_SA_JSON"
 
 [ios]
 token_auth_key_path = "./keys/key.p8"

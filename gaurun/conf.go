@@ -30,15 +30,16 @@ type SectionCore struct {
 }
 
 type SectionAndroid struct {
-	Enabled          bool   `toml:"enabled"`
-	ApiKey           string `toml:"apikey"`
-	Timeout          int    `toml:"timeout"`
-	KeepAliveTimeout int    `toml:"keepalive_timeout"`
-	KeepAliveConns   int    `toml:"keepalive_conns"`
-	RetryMax         int    `toml:"retry_max"`
-	UseV1            bool   `toml:"use_v1"`
-	Project          string `toml:"project"`
-	CredentialsFile  string `toml:"credentials_file"`
+	Enabled               bool   `toml:"enabled"`
+	ApiKey                string `toml:"apikey"`
+	Timeout               int    `toml:"timeout"`
+	KeepAliveTimeout      int    `toml:"keepalive_timeout"`
+	KeepAliveConns        int    `toml:"keepalive_conns"`
+	RetryMax              int    `toml:"retry_max"`
+	UseV1                 bool   `toml:"use_v1"`
+	Project               string `toml:"project"`
+	CredentialsFile       string `toml:"credentials_file"`
+	CredentialsJSONBase64 string `toml:"credentials_json"`
 }
 
 type SectionIos struct {
