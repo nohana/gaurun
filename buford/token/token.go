@@ -9,7 +9,6 @@ import (
 	"encoding/base64"
 	"encoding/pem"
 	"errors"
-	"github.com/mercari/gaurun/gaurun"
 	"os"
 	"sync"
 	"time"
@@ -42,11 +41,11 @@ type Token struct {
 	Bearer   string
 }
 
-func AuthKeyFromConfig(iosConfig gaurun.SectionIos) (*ecdsa.PrivateKey, error) {
-	if len(iosConfig.TokenAuthKeyBase64) > 0 {
-		return AuthKeyFromBase64(iosConfig.TokenAuthKeyBase64)
+func AuthKeyFromConfig(filename string, authKeyBase64 string) (*ecdsa.PrivateKey, error) {
+	if len(authKeyBase64) > 0 {
+		return AuthKeyFromBase64(authKeyBase64)
 	}
-	return AuthKeyFromFile(iosConfig.TokenAuthKeyPath)
+	return AuthKeyFromFile(filename)
 }
 
 // AuthKeyFromFile loads a .p8 certificate from a local file and returns a

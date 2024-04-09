@@ -13,9 +13,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/mercari/gaurun/buford/token"
-	"github.com/mercari/gaurun/gaurun"
-	"github.com/mercari/gaurun/gcm"
+	"github.com/nohana/gaurun/buford/token"
+	"github.com/nohana/gaurun/gaurun"
+	"github.com/nohana/gaurun/gcm"
 )
 
 var (
@@ -142,7 +142,7 @@ func main() {
 		)
 	} else if gaurun.ConfGaurun.Ios.IsTokenBasedProvider() {
 		var authKey *ecdsa.PrivateKey
-		authKey, err = token.AuthKeyFromConfig(gaurun.ConfGaurun.Ios)
+		authKey, err = token.AuthKeyFromConfig(gaurun.ConfGaurun.Ios.TokenAuthKeyPath, gaurun.ConfGaurun.Ios.TokenAuthKeyBase64)
 		if err != nil {
 			gaurun.LogSetupFatal(err)
 		}

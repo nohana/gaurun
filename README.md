@@ -1,6 +1,6 @@
-# Gaurun [![GitHub release](https://img.shields.io/github/release/mercari/gaurun.svg?style=flat-square)][release] ![GitHub Actions](https://github.com/mercari/gaurun/workflows/Go/badge.svg)
+# Gaurun [![GitHub release](https://img.shields.io/github/release/mercari/gaurun.svg?style=flat-square)][release] ![GitHub Actions](https://github.com/nohana/gaurun/workflows/Go/badge.svg)
 
-[release]: https://github.com/mercari/gaurun/releases
+[release]: https://github.com/nohana/gaurun/releases
 
 <img src="https://raw.githubusercontent.com/mercari/gaurun/master/img/logo.png" alt="logo" align="right"/>
 
@@ -22,12 +22,12 @@ Production ready.
 
 There are two way to install Gaurun; using a precompiled binary or install from source. Downloading a precompiled binary is easiest and recommended.
 
-To install a precompiled binary, download the appropriate zip package for your OS and architecture from [here](https://github.com/mercari/gaurun/releases). Once the zip is downloaded, unzip it and place the binary where you want to use (if you want to access it from the command-line, make sure to put it on `$PATH`).
+To install a precompiled binary, download the appropriate zip package for your OS and architecture from [here](https://github.com/nohana/gaurun/releases). Once the zip is downloaded, unzip it and place the binary where you want to use (if you want to access it from the command-line, make sure to put it on `$PATH`).
 
 To compile from source, you need Go1.15 or later. After setup, then clone the source code by running the following command,
 
 ```bash
-$ git clone https://github.com/mercari/gaurun.git
+$ git clone https://github.com/nohana/gaurun.git
 ```
 
 To fetch dependencies and build, run the following make tasks,

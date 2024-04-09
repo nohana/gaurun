@@ -5,11 +5,11 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
+	"github.com/nohana/gaurun/buford/token"
 	"io/ioutil"
 	"testing"
 	"time"
 
-	"github.com/mercari/gaurun/buford/token"
 	"github.com/stretchr/testify/assert"
 )
 

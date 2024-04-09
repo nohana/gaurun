@@ -12,8 +12,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/mercari/gaurun/buford/token"
-	"github.com/mercari/gaurun/gaurun"
+	"github.com/nohana/gaurun/buford/token"
+	"github.com/nohana/gaurun/gaurun"
 )
 
 const (
@@ -96,7 +96,7 @@ func main() {
 				gaurun.LogSetupFatal(fmt.Errorf("the key file for iOS was not found"))
 			}
 		} else if gaurun.ConfGaurun.Ios.IsTokenBasedProvider() {
-			_, err = token.AuthKeyFromConfig(gaurun.ConfGaurun.Ios)
+			_, err = token.AuthKeyFromConfig(gaurun.ConfGaurun.Ios.TokenAuthKeyPath, gaurun.ConfGaurun.Ios.TokenAuthKeyBase64)
 			if err != nil {
 				gaurun.LogSetupFatal(fmt.Errorf("the auth key file for iOS was not loading: %v", err))
 			}
