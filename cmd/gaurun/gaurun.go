@@ -39,6 +39,7 @@ func main() {
 	// load configuration
 	var conf gaurun.ConfToml
 	conf, err := gaurun.LoadConfFromEnv(gaurun.ConfGaurun)
+	fmt.Println("try config load from env")
 	if err != nil {
 		fmt.Printf("failed load from env: %v", err)
 		conf, err = gaurun.LoadConf(gaurun.ConfGaurun, *confPath)
