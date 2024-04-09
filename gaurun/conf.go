@@ -1,6 +1,8 @@
 package gaurun
 
 import (
+	"encoding/base64"
+	"fmt"
 	"net/http"
 	"net/url"
 	"os"
@@ -10,6 +12,8 @@ import (
 
 	"github.com/pelletier/go-toml"
 )
+
+var EnvConfKey = "GAURUN_CONFIG_BASE64"
 
 type ConfToml struct {
 	Core    SectionCore    `toml:"core"`
@@ -43,19 +47,20 @@ type SectionAndroid struct {
 }
 
 type SectionIos struct {
-	Enabled          bool   `toml:"enabled"`
-	PemCertPath      string `toml:"pem_cert_path"`
-	PemKeyPath       string `toml:"pem_key_path"`
-	PemKeyPassphrase string `toml:"pem_key_passphrase"`
-	TokenAuthKeyPath string `toml:"token_auth_key_path"`
-	TokenAuthKeyID   string `toml:"token_auth_key_id"`
-	TokenAuthTeamID  string `toml:"token_auth_team_id"`
-	Sandbox          bool   `toml:"sandbox"`
-	RetryMax         int    `toml:"retry_max"`
-	Timeout          int    `toml:"timeout"`
-	KeepAliveTimeout int    `toml:"keepalive_timeout"`
-	KeepAliveConns   int    `toml:"keepalive_conns"`
-	Topic            string `toml:"topic"`
+	Enabled            bool   `toml:"enabled"`
+	PemCertPath        string `toml:"pem_cert_path"`
+	PemKeyPath         string `toml:"pem_key_path"`
+	PemKeyPassphrase   string `toml:"pem_key_passphrase"`
+	TokenAuthKeyBase64 string `toml:"token_auth_key_base64"`
+	TokenAuthKeyPath   string `toml:"token_auth_key_path"`
+	TokenAuthKeyID     string `toml:"token_auth_key_id"`
+	TokenAuthTeamID    string `toml:"token_auth_team_id"`
+	Sandbox            bool   `toml:"sandbox"`
+	RetryMax           int    `toml:"retry_max"`
+	Timeout            int    `toml:"timeout"`
+	KeepAliveTimeout   int    `toml:"keepalive_timeout"`
+	KeepAliveConns     int    `toml:"keepalive_conns"`
+	Topic              string `toml:"topic"`
 }
 
 type SectionLog struct {
@@ -119,6 +124,23 @@ func LoadConf(confGaurun ConfToml, confPath string) (ConfToml, error) {
 	return confGaurun, nil
 }
 
+func LoadConfFromEnv(confGaurun ConfToml) (ConfToml, error) {
+	confTomlBase64 := os.Getenv(EnvConfKey)
+	if len(confTomlBase64) <= 0 {
+		return confGaurun, fmt.Errorf("no configuration found in the environment variable %s", EnvConfKey)
+	}
+	// Base64デコード
+	confTomlString, err := base64.StdEncoding.DecodeString(confTomlBase64)
+	if err != nil {
+		return confGaurun, err
+	}
+	err = toml.Unmarshal(confTomlString, &confGaurun)
+	if err != nil {
+		return confGaurun, err
+	}
+	return confGaurun, nil
+}
+
 func ConfigPushersHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "PUT" {
 		sendResponse(w, "method must be PUT", http.StatusBadRequest)
@@ -163,7 +185,7 @@ func ConfigPushersHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *SectionIos) IsTokenBasedProvider() bool {
-	return s.TokenAuthKeyPath != "" && s.TokenAuthKeyID != "" && s.TokenAuthTeamID != ""
+	return (len(s.TokenAuthKeyBase64) > 0 || s.TokenAuthKeyPath != "") && s.TokenAuthKeyID != "" && s.TokenAuthTeamID != ""
 }
 
 func (s *SectionIos) IsCertificateBasedProvider() bool {

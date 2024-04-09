@@ -6,9 +6,11 @@ package token
 import (
 	"crypto/ecdsa"
 	"crypto/x509"
+	"encoding/base64"
 	"encoding/pem"
 	"errors"
-	"io/ioutil"
+	"github.com/mercari/gaurun/gaurun"
+	"os"
 	"sync"
 	"time"
 
@@ -40,13 +42,29 @@ type Token struct {
 	Bearer   string
 }
 
+func AuthKeyFromConfig(iosConfig gaurun.SectionIos) (*ecdsa.PrivateKey, error) {
+	if len(iosConfig.TokenAuthKeyBase64) > 0 {
+		return AuthKeyFromBase64(iosConfig.TokenAuthKeyBase64)
+	}
+	return AuthKeyFromFile(iosConfig.TokenAuthKeyPath)
+}
+
 // AuthKeyFromFile loads a .p8 certificate from a local file and returns a
 func AuthKeyFromFile(filename string) (*ecdsa.PrivateKey, error) {
-	bytes, err := ioutil.ReadFile(filename)
+	bytes, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
 	return AuthKeyFromBytes(bytes)
+}
+
+func AuthKeyFromBase64(authKeyBase64 string) (*ecdsa.PrivateKey, error) {
+	// Base64デコード
+	authKey, err := base64.StdEncoding.DecodeString(authKeyBase64)
+	if err != nil {
+		return nil, err
+	}
+	return AuthKeyFromBytes([]byte(authKey))
 }
 
 // AuthKeyFromBytes loads a .p8 certificate from an in memory byte array and

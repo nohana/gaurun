@@ -37,9 +37,14 @@ func main() {
 	gaurun.ConfGaurun = gaurun.BuildDefaultConf()
 
 	// load configuration
-	conf, err := gaurun.LoadConf(gaurun.ConfGaurun, *confPath)
+	var conf gaurun.ConfToml
+	conf, err := gaurun.LoadConfFromEnv(gaurun.ConfGaurun)
 	if err != nil {
-		gaurun.LogSetupFatal(err)
+		fmt.Printf("failed load from env: %v", err)
+		conf, err = gaurun.LoadConf(gaurun.ConfGaurun, *confPath)
+		if err != nil {
+			gaurun.LogSetupFatal(err)
+		}
 	}
 	gaurun.ConfGaurun = conf
 
@@ -91,7 +96,7 @@ func main() {
 				gaurun.LogSetupFatal(fmt.Errorf("the key file for iOS was not found"))
 			}
 		} else if gaurun.ConfGaurun.Ios.IsTokenBasedProvider() {
-			_, err = token.AuthKeyFromFile(gaurun.ConfGaurun.Ios.TokenAuthKeyPath)
+			_, err = token.AuthKeyFromConfig(gaurun.ConfGaurun.Ios)
 			if err != nil {
 				gaurun.LogSetupFatal(fmt.Errorf("the auth key file for iOS was not loading: %v", err))
 			}

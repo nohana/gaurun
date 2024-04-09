@@ -142,7 +142,7 @@ func main() {
 		)
 	} else if gaurun.ConfGaurun.Ios.IsTokenBasedProvider() {
 		var authKey *ecdsa.PrivateKey
-		authKey, err = token.AuthKeyFromFile(gaurun.ConfGaurun.Ios.TokenAuthKeyPath)
+		authKey, err = token.AuthKeyFromConfig(gaurun.ConfGaurun.Ios)
 		if err != nil {
 			gaurun.LogSetupFatal(err)
 		}

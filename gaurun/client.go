@@ -116,7 +116,7 @@ func InitAPNSClient() error {
 		)
 	} else if ConfGaurun.Ios.IsTokenBasedProvider() {
 		var authKey *ecdsa.PrivateKey
-		authKey, err = token.AuthKeyFromFile(ConfGaurun.Ios.TokenAuthKeyPath)
+		authKey, err = token.AuthKeyFromConfig(ConfGaurun.Ios)
 		if err != nil {
 			return err
 		}
