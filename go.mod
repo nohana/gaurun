@@ -4,7 +4,9 @@ go 1.15
 
 require (
 	firebase.google.com/go v3.13.0+incompatible
+	github.com/GoogleCloudPlatform/functions-framework-go v1.8.1
 	github.com/client9/reopen v1.0.0
+	github.com/cloudevents/sdk-go/v2 v2.15.2
 	github.com/fukata/golang-stats-api-handler v1.0.0
 	github.com/golang-jwt/jwt/v4 v4.0.0
 	github.com/lestrrat-go/server-starter v0.0.0-20210101230921-50cd1900b5bc

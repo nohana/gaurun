@@ -16,10 +16,12 @@ import (
 var EnvConfKey = "GAURUN_CONFIG_BASE64"
 
 type ConfToml struct {
-	Core    SectionCore    `toml:"core"`
-	Android SectionAndroid `toml:"android"`
-	Ios     SectionIos     `toml:"ios"`
-	Log     SectionLog     `toml:"log"`
+	Core         SectionCore         `toml:"core"`
+	Android      SectionAndroid      `toml:"android"`
+	Ios          SectionIos          `toml:"ios"`
+	Log          SectionLog          `toml:"log"`
+	Driver       SectionDriver       `toml:"driver"`
+	GaurunClient SectionGaurunClient `toml:"gaurun_client"`
 }
 
 type SectionCore struct {
@@ -67,6 +69,21 @@ type SectionLog struct {
 	AccessLog string `toml:"access_log"`
 	ErrorLog  string `toml:"error_log"`
 	Level     string `toml:"level"`
+}
+
+type SectionDriver struct {
+	HttpMaxIdleConnsPerHost int `toml:"http_max_idle_conns_per_host"`
+}
+
+type SectionGaurunClient struct {
+	Clients          int                     `toml:"max_client"`
+	TargetPushPerMin SectionTargetPushPerMin `toml:"target_push_per_min"`
+}
+
+type SectionTargetPushPerMin struct {
+	MetadataKey       string `toml:"metadata_key"`
+	DefaultPushPerMin int    `toml:"default_push_per_min"`
+	PushPerMin        int
 }
 
 func BuildDefaultConf() ConfToml {

@@ -336,3 +336,22 @@ func PushNotificationHandler(w http.ResponseWriter, r *http.Request) {
 	LogError.Debug("response to client")
 	sendResponse(w, "ok", http.StatusOK)
 }
+
+func PushNotificationFromPubSub(data []byte) error {
+	var reqGaurun RequestGaurun
+	err := json.Unmarshal(data, &reqGaurun)
+	if err != nil {
+		return fmt.Errorf("message: Unmarshal failed(%s)", err.Error())
+	}
+
+	tokenSize := float64(len(reqGaurun.Notifications[0].Tokens))
+	pushPerMin := float64(ConfGaurun.GaurunClient.TargetPushPerMin.PushPerMin)
+	pushPerSec := pushPerMin / 60.0
+	interval_per_push := float64(1000) / pushPerSec // interval_per_push: millisecond
+	interval := interval_per_push * tokenSize
+	time.Sleep(time.Duration(interval) * time.Millisecond)
+
+	LogError.Debug("enqueue notification")
+	go enqueueNotifications(reqGaurun.Notifications)
+	return nil
+}
