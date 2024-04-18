@@ -1,6 +1,7 @@
 package gaurun
 
 import (
+	"firebase.google.com/go/messaging"
 	"github.com/mercari/gaurun/gcm"
 
 	firebase "firebase.google.com/go"
@@ -19,6 +20,7 @@ var (
 	APNSClient  APNsClient
 	GCMClient   *gcm.Client
 	FirebaseApp *firebase.App
+	FcmV1Client *messaging.Client
 	// access and error logger
 	LogAccess *zap.Logger
 	LogError  *zap.Logger

@@ -80,7 +80,13 @@ func InitFirebaseAppForFcmV1() error {
 
 	var err error
 
-	FirebaseApp, err = firebase.NewApp(context.Background(), nil, opts...)
+	ctx := context.Background()
+	FirebaseApp, err = firebase.NewApp(ctx, nil, opts...)
+	if err != nil {
+		return err
+	}
+
+	FcmV1Client, err = FirebaseApp.Messaging(ctx)
 	if err != nil {
 		return err
 	}
