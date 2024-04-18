@@ -7,15 +7,28 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"sync"
 	"time"
 
-	firebase "firebase.google.com/go"
-
 	"google.golang.org/api/option"
+
+	firebase "firebase.google.com/go"
+	"firebase.google.com/go/messaging"
 
 	"github.com/mercari/gaurun/buford/token"
 	"github.com/mercari/gaurun/gcm"
 )
+
+type SafeMessagingClient struct {
+	client *messaging.Client
+	mu     sync.Mutex
+}
+
+func (s *SafeMessagingClient) Send(ctx context.Context, message *messaging.Message) (string, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.client.Send(ctx, message)
+}
 
 func keepAliveInterval(keepAliveTimeout int) int {
 	const minInterval = 30
@@ -86,7 +99,16 @@ func InitFirebaseAppForFcmV1() error {
 		return err
 	}
 
-	FcmV1Client, err = FirebaseApp.Messaging(ctx)
+	msgClient, err := FirebaseApp.Messaging(ctx)
+	if err != nil {
+		return err
+	}
+
+	FcmV1Client = &SafeMessagingClient{
+		client: msgClient,
+		mu:     sync.Mutex{},
+	}
+
 	if err != nil {
 		return err
 	}
