@@ -14,8 +14,8 @@ import (
 
 	"firebase.google.com/go/messaging"
 
-	"github.com/mercari/gaurun/buford/push"
-	"github.com/mercari/gaurun/gcm"
+	"github.com/nohana/gaurun/buford/push"
+	"github.com/nohana/gaurun/gcm"
 
 	"go.uber.org/zap"
 )

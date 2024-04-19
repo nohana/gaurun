@@ -12,10 +12,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/mercari/gaurun/buford/payload"
-	"github.com/mercari/gaurun/buford/payload/badge"
-	"github.com/mercari/gaurun/buford/push"
-	"github.com/mercari/gaurun/buford/token"
+	"github.com/nohana/gaurun/buford/payload"
+	"github.com/nohana/gaurun/buford/payload/badge"
+	"github.com/nohana/gaurun/buford/push"
+	"github.com/nohana/gaurun/buford/token"
 )
 
 type APNsClient struct {

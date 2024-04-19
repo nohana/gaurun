@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mercari/gaurun/buford/token"
+	"github.com/nohana/gaurun/buford/token"
 	"github.com/stretchr/testify/assert"
 )
 

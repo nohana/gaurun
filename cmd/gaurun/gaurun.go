@@ -12,8 +12,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/mercari/gaurun/buford/token"
-	"github.com/mercari/gaurun/gaurun"
+	"github.com/nohana/gaurun/buford/token"
+	"github.com/nohana/gaurun/gaurun"
 )
 
 const (

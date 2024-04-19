@@ -15,8 +15,8 @@ import (
 	firebase "firebase.google.com/go"
 	"firebase.google.com/go/messaging"
 
-	"github.com/mercari/gaurun/buford/token"
-	"github.com/mercari/gaurun/gcm"
+	"github.com/nohana/gaurun/buford/token"
+	"github.com/nohana/gaurun/gcm"
 )
 
 type SafeMessagingClient struct {

@@ -1,7 +1,7 @@
 package gaurun
 
 import (
-	"github.com/mercari/gaurun/gcm"
+	"github.com/nohana/gaurun/gcm"
 
 	firebase "firebase.google.com/go"
 

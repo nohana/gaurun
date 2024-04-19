@@ -8,7 +8,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/mercari/gaurun/buford/push"
+	"github.com/nohana/gaurun/buford/push"
 )
 
 func TestQueuePush(t *testing.T) {

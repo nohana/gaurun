@@ -13,9 +13,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/mercari/gaurun/buford/token"
-	"github.com/mercari/gaurun/gaurun"
-	"github.com/mercari/gaurun/gcm"
+	"github.com/nohana/gaurun/buford/token"
+	"github.com/nohana/gaurun/gaurun"
+	"github.com/nohana/gaurun/gcm"
 )
 
 var (
