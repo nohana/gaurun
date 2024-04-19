@@ -1,4 +1,4 @@
-module github.com/mercari/gaurun
+module github.com/nohana/gaurun
 
 go 1.15
 
