@@ -178,11 +178,11 @@ func pushNotificationFCMV1(req RequestGaurunNotification) error {
 	}
 
 	sendContext := context.Background()
-	//client, err := FirebaseApp.Messaging(sendContext)
-	//if err != nil {
-	//	LogPush(req.ID, StatusFailedPush, "", time.Now().Sub(time.Now()).Seconds(), req, err)
-	//	return err
-	//}
+	client, err := FirebaseApp.Messaging(sendContext)
+	if err != nil {
+		LogPush(req.ID, StatusFailedPush, "", time.Now().Sub(time.Now()).Seconds(), req, err)
+		return err
+	}
 
 	token := req.Tokens[0]
 
@@ -216,7 +216,7 @@ func pushNotificationFCMV1(req RequestGaurunNotification) error {
 	}
 
 	stime := time.Now()
-	_, err = FcmV1Client.Send(sendContext, msg)
+	_, err = client.Send(sendContext, msg)
 	etime := time.Now()
 	ptime := etime.Sub(stime).Seconds()
 	if err != nil {
