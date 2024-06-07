@@ -7,15 +7,28 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"sync"
 	"time"
 
-	firebase "firebase.google.com/go"
-
 	"google.golang.org/api/option"
+
+	firebase "firebase.google.com/go"
+	"firebase.google.com/go/messaging"
 
 	"github.com/nohana/gaurun/buford/token"
 	"github.com/nohana/gaurun/gcm"
 )
+
+type SafeMessagingClient struct {
+	client *messaging.Client
+	mu     sync.Mutex
+}
+
+func (s *SafeMessagingClient) Send(ctx context.Context, message *messaging.Message) (string, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.client.Send(ctx, message)
+}
 
 func keepAliveInterval(keepAliveTimeout int) int {
 	const minInterval = 30
@@ -80,7 +93,22 @@ func InitFirebaseAppForFcmV1() error {
 
 	var err error
 
-	FirebaseApp, err = firebase.NewApp(context.Background(), nil, opts...)
+	ctx := context.Background()
+	FirebaseApp, err = firebase.NewApp(ctx, nil, opts...)
+	if err != nil {
+		return err
+	}
+
+	msgClient, err := FirebaseApp.Messaging(ctx)
+	if err != nil {
+		return err
+	}
+
+	FcmV1Client = &SafeMessagingClient{
+		client: msgClient,
+		mu:     sync.Mutex{},
+	}
+
 	if err != nil {
 		return err
 	}
@@ -116,7 +144,7 @@ func InitAPNSClient() error {
 		)
 	} else if ConfGaurun.Ios.IsTokenBasedProvider() {
 		var authKey *ecdsa.PrivateKey
-		authKey, err = token.AuthKeyFromConfig(ConfGaurun.Ios.TokenAuthKeyPath, ConfGaurun.Ios.TokenAuthKeyBase64)
+		authKey, err = token.AuthKeyFromFile(ConfGaurun.Ios.TokenAuthKeyPath)
 		if err != nil {
 			return err
 		}

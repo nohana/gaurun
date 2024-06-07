@@ -19,6 +19,7 @@ var (
 	APNSClient  APNsClient
 	GCMClient   *gcm.Client
 	FirebaseApp *firebase.App
+	FcmV1Client *SafeMessagingClient
 	// access and error logger
 	LogAccess *zap.Logger
 	LogError  *zap.Logger
