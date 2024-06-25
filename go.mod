@@ -3,6 +3,7 @@ module github.com/nohana/gaurun
 go 1.15
 
 require (
+	cloud.google.com/go/functions v1.16.2 // indirect
 	firebase.google.com/go v3.13.0+incompatible
 	github.com/GoogleCloudPlatform/functions-framework-go v1.8.1
 	github.com/client9/reopen v1.0.0
@@ -11,7 +12,7 @@ require (
 	github.com/golang-jwt/jwt/v4 v4.0.0
 	github.com/lestrrat-go/server-starter v0.0.0-20210101230921-50cd1900b5bc
 	github.com/pelletier/go-toml v1.8.1
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
 	go.uber.org/zap v1.17.0
-	google.golang.org/api v0.167.0
+	google.golang.org/api v0.177.0
 )

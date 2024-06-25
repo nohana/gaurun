@@ -337,7 +337,7 @@ func PushNotificationHandler(w http.ResponseWriter, r *http.Request) {
 	sendResponse(w, "ok", http.StatusOK)
 }
 
-func PushNotificationFromPubSub(data []byte) error {
+func PushNotificationFromPubSub(ctx context.Context, data []byte) error {
 	var reqGaurun RequestGaurun
 	err := json.Unmarshal(data, &reqGaurun)
 	if err != nil {

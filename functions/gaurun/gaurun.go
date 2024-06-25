@@ -1,4 +1,4 @@
-package main
+package gaurun
 
 import (
 	"context"
@@ -9,19 +9,13 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/GoogleCloudPlatform/functions-framework-go/functions"
 	"github.com/cloudevents/sdk-go/v2/event"
 
 	"github.com/nohana/gaurun/buford/token"
 	"github.com/nohana/gaurun/gaurun"
 )
 
-func init() {
-	initGaurun()
-	functions.CloudEvent("pushFromEvent", pushFromEvent)
-}
-
-func initGaurun() {
+func InitGaurun() {
 	confPath := flag.String("c", "", "configuration file path for gaurun")
 	listenPort := flag.String("p", "", "port number or unix socket path")
 	workerNum := flag.Int64("w", 0, "number of workers for push notification")
@@ -149,12 +143,12 @@ func initGaurun() {
 	gaurun.LogError.Info("successfully shutdown")
 }
 
-func pushFromEvent(ctx context.Context, e event.Event) error {
-	err := gaurun.PushNotificationFromPubSub(e.Data())
+func PushFromEvent(ctx context.Context, e event.Event) error {
+	err := gaurun.PushNotificationFromPubSub(ctx, e.Data())
 	if err != nil {
 		return fmt.Errorf("message:Push failed error:%s pubsub_id:%s", err, e.ID())
 	}
-	//goland:noinspection ALL
+
 	fmt.Printf("message:Push succeeded:pubsub_id:%s", e.ID())
 
 	return nil
