@@ -143,8 +143,28 @@ func InitGaurun() {
 	gaurun.LogError.Info("successfully shutdown")
 }
 
+// MessagePublishedData contains the full Pub/Sub message
+// See the documentation for more details:
+// https://cloud.google.com/eventarc/docs/cloudevents#pubsub
+type MessagePublishedData struct {
+	Message PubSubMessage
+}
+
+// PubSubMessage is the payload of a Pub/Sub event.
+// See the documentation for more details:
+// https://cloud.google.com/pubsub/docs/reference/rest/v1/PubsubMessage
+type PubSubMessage struct {
+	Data []byte `json:"data"`
+}
+
 func PushFromEvent(ctx context.Context, e event.Event) error {
-	err := gaurun.PushNotificationFromPubSub(ctx, e.Data())
+	// ここのe.Data()で取得できるデータはEvent周りのデータを含むbyteなので、そのままUnmarshalできない
+	var msg MessagePublishedData
+	if err := e.DataAs(&msg); err != nil {
+		return fmt.Errorf("event.DataAs: %w", err)
+	}
+	// ここで取得できるmsg.Message.DataがPublishしたpayload
+	err := gaurun.PushNotificationFromPubSub(ctx, msg.Message.Data)
 	if err != nil {
 		return fmt.Errorf("message:Push failed error:%s pubsub_id:%s", err, e.ID())
 	}

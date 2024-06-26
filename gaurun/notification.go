@@ -216,7 +216,7 @@ func pushNotificationFCMV1(req RequestGaurunNotification) error {
 	}
 
 	stime := time.Now()
-	_, err = client.Send(sendContext, msg)
+	resultString, err := client.Send(sendContext, msg)
 	etime := time.Now()
 	ptime := etime.Sub(stime).Seconds()
 	if err != nil {
@@ -224,6 +224,7 @@ func pushNotificationFCMV1(req RequestGaurunNotification) error {
 		LogPush(req.ID, StatusFailedPush, token, ptime, req, err)
 		return err
 	}
+	fmt.Println(resultString)
 
 	LogPush(req.ID, StatusSucceededPush, token, ptime, req, nil)
 
