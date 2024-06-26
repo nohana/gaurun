@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -68,6 +69,7 @@ type CertificatePem struct {
 }
 
 func enqueueNotifications(notifications []RequestGaurunNotification) {
+	defer EnqueueWaitGroup.Done()
 	for _, notification := range notifications {
 		err := validateNotification(&notification)
 		if err != nil {
@@ -88,6 +90,7 @@ func enqueueNotifications(notifications []RequestGaurunNotification) {
 			notification2.ID = numberingPush()
 			if enabledPush {
 				LogPush(notification2.ID, StatusAcceptedPush, token, 0, notification2, nil)
+				PusherWg.Add(1)
 				QueueNotification <- notification2
 			} else {
 				LogPush(notification2.ID, StatusDisabledPush, token, 0, notification2, nil)
@@ -338,6 +341,8 @@ func PushNotificationHandler(w http.ResponseWriter, r *http.Request) {
 	sendResponse(w, "ok", http.StatusOK)
 }
 
+var EnqueueWaitGroup *sync.WaitGroup
+
 func PushNotificationFromPubSub(ctx context.Context, data []byte) error {
 	var reqGaurun RequestGaurun
 	err := json.Unmarshal(data, &reqGaurun)
@@ -353,6 +358,7 @@ func PushNotificationFromPubSub(ctx context.Context, data []byte) error {
 	time.Sleep(time.Duration(interval) * time.Millisecond)
 
 	LogError.Debug("enqueue notification")
+	EnqueueWaitGroup.Add(1)
 	go enqueueNotifications(reqGaurun.Notifications)
 	return nil
 }

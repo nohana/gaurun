@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 
@@ -21,6 +22,8 @@ func InitGaurun() {
 	workerNum := flag.Int64("w", 0, "number of workers for push notification")
 	queueNum := flag.Int64("q", 0, "size of internal queue for push notification")
 	flag.Parse()
+
+	gaurun.EnqueueWaitGroup = new(sync.WaitGroup)
 
 	// set default parameters
 	gaurun.ConfGaurun = gaurun.BuildDefaultConf()
@@ -137,10 +140,12 @@ func InitGaurun() {
 		}
 	}()
 
+	gaurun.EnqueueWaitGroup.Wait()
+
 	// Block until all pusher worker job is done.
 	gaurun.PusherWg.Wait()
 
-	gaurun.LogError.Info("successfully shutdown")
+	gaurun.LogError.Info("successfully init")
 }
 
 // MessagePublishedData contains the full Pub/Sub message
@@ -169,7 +174,28 @@ func PushFromEvent(ctx context.Context, e event.Event) error {
 		return fmt.Errorf("message:Push failed error:%s pubsub_id:%s", err, e.ID())
 	}
 
-	fmt.Printf("message:Push succeeded:pubsub_id:%s", e.ID())
+	// Start a goroutine to log number of job queue.
+	go func() {
+		for {
+			queue := len(gaurun.QueueNotification)
+			if queue == 0 {
+				fmt.Println(`queue is empty:%s`, e.ID())
+				break
+			}
+
+			gaurun.LogError.Info(fmt.Sprintf("wait until queue is empty. Current queue len: %d", queue))
+			time.Sleep(1 * time.Second)
+		}
+	}()
+
+	gaurun.EnqueueWaitGroup.Wait()
+
+	fmt.Println(`message:Push start succeeded:pubsub_id:%s`, e.ID())
+
+	// Block until all pusher worker job is done.
+	gaurun.PusherWg.Wait()
+
+	fmt.Println(`message:Push succeeded:pubsub_id:%s`, e.ID())
 
 	return nil
 }

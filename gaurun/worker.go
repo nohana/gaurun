@@ -111,10 +111,10 @@ func pushNotificationWorker() {
 			// as the increment in goroutine runs asynchronously.
 			atomic.AddInt64(&pusherCount, 1)
 			atomic.AddInt64(&PusherCountAll, 1)
-			PusherWg.Add(1)
 			go pushAsync(pusher, notification, retryMax, &pusherCount)
 			continue
 		} else {
+			PusherWg.Done()
 			pushSync(pusher, notification, retryMax)
 			continue
 		}
