@@ -114,7 +114,6 @@ func pushNotificationWorker() {
 			go pushAsync(pusher, notification, retryMax, &pusherCount)
 			continue
 		} else {
-			PusherWg.Done()
 			pushSync(pusher, notification, retryMax)
 			continue
 		}
